@@ -1,0 +1,157 @@
+<html dir="ltr" class="js no-touch" lang="de"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+
+
+    <!-- leaflet.CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="">
+    
+<style>
+	body{
+	margin:0;
+	padding:0;
+
+	}
+      #map{
+        width:100%;
+        height:100vh;
+        
+      }
+      
+      
+    </style>
+    
+    
+    
+  </head>
+  <body>
+    <div id="map">
+    </div>
+  
+  
+
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script>
+
+
+
+
+  // map initialization
+  var map = L.map('map').setView([37.757374, -9.550787], 9);
+
+
+  //openstreetmap Layer
+  var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
+  
+ osm.addTo(map); 
+
+//maps
+
+var Stamen_Toner = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', {
+	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 20,
+	ext: 'png'
+});
+
+var CartoDB_DarkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+});
+
+var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+});
+
+var GeoportailFrance_orthos = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+	attribution: '<a target="_blank" href="https://www.geoportail.gouv.fr/">Geoportail France</a>',
+	bounds: [[-75, -180], [81, 180]],
+	minZoom: 2,
+	maxZoom: 19,
+	apikey: 'choisirgeoportail',
+	format: 'image/jpeg',
+	style: 'normal'
+});
+
+//marker 
+
+var myIcon = L.icon({
+    iconUrl: 'img/coe_small.png',
+    iconSize: [60, 65]
+    //iconAnchor: [100, 100]
+});
+
+
+var COE_Marker = L.marker([38.474630, -8.871719], {icon: myIcon});
+var popup = COE_Marker.bindPopup('COE CSW HQ').openPopup();
+popup.addTo(map);
+
+
+var baseMaps = {
+	"OSM": osm,
+	"Dark_Contrast": Stamen_Toner ,
+	"Dark": CartoDB_DarkMatter,
+	"Light":CartoDB_Positron,
+	"satelite":GeoportailFrance_orthos
+};
+
+var overlayMaps = {
+	"COE CSW": COE_Marker
+
+};
+
+var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+//GeoJSON handle
+
+var contacts = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"classification" :"friend"},"geometry":{"coordinates":[-9.32998244210944,38.3171022823671],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.077812638731615,38.20814743065412],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.38129675202569,38.07467128438262],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.001941610409347,38.36095155725562],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.10077360783049,38.04322965647148],"type":"Point"}}]};
+
+var hostileIcon = L.icon({
+    iconUrl: 'img/hostile.png',
+    iconSize: [40, 40]
+});
+var friendIcon = L.icon({
+    iconUrl: 'img/friend.png',
+    iconSize: [40, 40]
+});
+
+  function onEachFeature(feature, layer) {
+    console.log(feature);
+    layer.bindPopup(feature.properties.ATT1);
+  }
+
+L.geoJSON(contacts, {
+      pointToLayer: function(feature, latlng) {
+        console.log(latlng, feature);
+	switch (feature.properties.classification) {
+        	case "hostile" :return L.marker(latlng, {icon: hostileIcon});
+		case "friend" :return L.marker(latlng, {icon: friendIcon});
+	}
+      },
+      onEachFeature: onEachFeature
+}).bindPopup(function (layer) {
+    return layer.feature.properties.classification;
+}).addTo(map);
+
+
+//end of experimental handle
+
+
+
+
+
+
+
+
+
+</script></body></html>
