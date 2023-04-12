@@ -1,0 +1,357 @@
+<html dir="ltr" class="js no-touch" lang="de"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+
+
+    <!-- leaflet.CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gokertanrisever/leaflet-ruler@master/src/leaflet-ruler.css" integrity="sha384-P9DABSdtEY/XDbEInD3q+PlL+BjqPCXGcF8EkhtKSfSTr/dS5PBKa9+/PMkW2xsY" crossorigin="anonymous">  
+    
+    <link rel="stylesheet" href="./sources/Leaflet-Coordinates-master/dist/Leaflet.Coordinates-0.1.5.ie.css">  
+    <link rel="stylesheet" href="./sources/Leaflet-Coordinates-master/dist/Leaflet.Coordinates-0.1.5.css">
+
+<style>
+	body{
+	margin:0;
+	padding:0;
+
+	}
+      #map{
+        width:100%;
+        height:100vh;
+        
+      }
+      
+      
+    </style>
+    
+    
+    
+  </head>
+  <body>
+    <div id="map">
+    </div>
+  
+  
+
+
+
+<script src="https://unpkg.com/browse/whatwg-fetch@3.2.0/dist/fetch.umd.js"></script>    
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/gokertanrisever/leaflet-ruler@master/src/leaflet-ruler.js" integrity="sha384-N2S8y7hRzXUPiepaSiUvBH1ZZ7Tc/ZfchhbPdvOE5v3aBBCIepq9l+dBJPFdo1ZJ" crossorigin="anonymous"></script>
+
+<script src="https://unpkg.com/georaster@1.5.6/dist/georaster.browser.bundle.min.js"></script>
+<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+
+<script src="./sources/Leaflet-Coordinates-master/dist/Leaflet.Coordinates-0.1.5.src.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+
+<script src="./data/ex_area.js"></script>
+
+
+<script>
+
+
+
+
+  // map initialization
+  var map = L.map('map').setView([37.757374, -9.550787], 9);
+
+
+  //openstreetmap Layer
+  var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
+  
+ osm.addTo(map); 
+
+//maps
+
+var Stamen_Toner = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', {
+	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 20,
+	ext: 'png'
+});
+
+var CartoDB_DarkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+});
+
+var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+});
+
+var GeoportailFrance_orthos = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+	attribution: '<a target="_blank" href="https://www.geoportail.gouv.fr/">Geoportail France</a>',
+	bounds: [[-75, -180], [81, 180]],
+	minZoom: 2,
+	maxZoom: 19,
+	apikey: 'choisirgeoportail',
+	format: 'image/jpeg',
+	style: 'normal'
+});
+
+var NauticalChart = L.tileLayer('https://www.marinetraffic.com/TMS/1.0.0/TX97/{z}/{x}/{y}.png?v=3',{
+              attribution:'&copy; <a href="https://www.i4-insight.com/" target="_blank">i4-insight</a>',
+              edgeBufferTiles: 2,
+              maxNativeZoom: 16,
+              tms: true,
+              maxZoom: 19,
+              minZoom: 2,
+});
+
+
+
+
+
+
+//marker 
+
+var myIcon = L.icon({
+    iconUrl: 'img/coe_small.png',
+    iconSize: [60, 65]
+    //iconAnchor: [100, 100]
+});
+
+
+var COE_Marker = L.marker([38.474630, -8.871719], {icon: myIcon, title:"This is the hover for COE CSW"});
+var popup = COE_Marker.bindPopup('<h1>COE CSW HQ</h1> <p>Here is were we are and were we are operating from</p> <img src=https://www.coecsw.org/fileadmin/coe-csw/images/top-images/top-001.jpg" width="300" height="200"> <br> <a href="https://www.coecsw.org/our-coe/our-coe/">look into the COE!</a> <iframe src="https://www.coecsw.org/our-coe/our-coe/" title="W3Schools Free Online Web Tutorials"></iframe>').openPopup();
+popup.addTo(map);
+
+
+
+
+
+
+//GeoJSON handle
+
+var contacts = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"classification" :"friend"},"geometry":{"coordinates":[-9.32998244210944,38.3171022823671],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.077812638731615,38.20814743065412],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.38129675202569,38.07467128438262],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.001941610409347,38.36095155725562],"type":"Point"}},{"type":"Feature","properties":{"classification" :"hostile"},"geometry":{"coordinates":[-9.10077360783049,38.04322965647148],"type":"Point"}}]};
+
+var hostileIcon = L.icon({
+    iconUrl: 'img/hostile.png',
+    iconSize: [40, 40]
+});
+var friendIcon = L.icon({
+    iconUrl: 'img/friend.png',
+    iconSize: [40, 40]
+});
+
+  function onEachFeature(feature, layer) {
+    console.log(feature);
+    layer.bindPopup(feature.properties.ATT1);
+  }
+
+
+var Updated_Time = new Date().toUTCString()
+
+contact_layer = L.geoJSON(contacts, {
+      pointToLayer: function(feature, latlng) {
+        console.log(latlng, feature);
+	switch (feature.properties.classification) {
+        	case "hostile" :return L.marker(latlng, {icon: hostileIcon});
+		case "friend" :return L.marker(latlng, {icon: friendIcon});
+	}
+      },
+      onEachFeature: onEachFeature
+}).bindPopup(function (layer) {
+    return layer.feature.properties.classification+" latest update" + Updated_Time;
+}).addTo(map);
+
+
+//dat ganze nochmal alle x millisekunden
+setInterval(function () {
+
+
+var Updated_Time = new Date().toUTCString()
+
+
+//if (map.hasLayer(contact_layer)){map.removeLayer(contact_layer)};
+
+
+contact_layer = L.geoJSON(contacts, {
+      pointToLayer: function(feature, latlng) {
+        console.log(latlng, feature);
+	switch (feature.properties.classification) {
+        	case "hostile" :return L.marker(latlng, {icon: hostileIcon});
+		case "friend" :return L.marker(latlng, {icon: friendIcon});
+	}
+      },
+      onEachFeature: onEachFeature
+}).bindPopup(function (layer) {
+    return layer.feature.properties.classification+" latest update" + Updated_Time;
+}).addTo(map);
+
+
+
+
+}, 30000);
+
+//new Date().toUTCString()
+
+
+//end of experimental handle
+
+
+var stuff = L.geoJSON(var_example).addTo(map);
+
+//Geotiff stuff
+const header = new Headers({ "Access-Control-Allow-Origin": "*" });
+
+const geotiff_url = "https://github.com/Reariuz/Leaflet-maps/blob/main/subset_0_of_S2B_MSIL2A_20230409T112119_N0509_R037_T29SNC_20230409T124600_RGB.tif";
+
+
+      fetch(geotiff_url,{mode: 'no-cors'})
+        .then(function (response) { return response.arrayBuffer(); })
+        .then(function (arrayBuffer) {
+          parseGeoraster(arrayBuffer).then(function (georaster) {
+            console.log("georaster:", georaster);
+            var layer = new GeoRasterLayer({
+              georaster: georaster,
+              resolution: 512,
+              pixelValuesToColorFn: function(values) {
+                if (values[3] === 0) return null;
+                return `rgb(${values[0]},${values[1]},${values[2]})`;
+              }
+            });
+            layer.addTo(map);
+            map.fitBounds(layer.getBounds());
+        });
+      });
+
+
+//##############
+
+//Layercontrol
+
+const TOKEN =
+  'pk.eyJ1IjoibWFwYm94LW9mZmljaWFsIiwiYSI6ImNrcHBnMG5yMDA2eWgyb2s5MDI4NG10OXAifQ.S65o8bcu6oqsp6HQnWYJfw';
+
+const baseUrl = 'https://api.mapbox.com/';
+
+const URLV4 = name =>
+  `${baseUrl}v4/${name}/{z}/{x}/{y}.jpg90?access_token=${TOKEN}`;
+
+const URLV1 = name =>
+  `${baseUrl}styles/v1/${name}/tiles/{z}/{x}/{y}?access_token=${TOKEN}`;
+
+const STYLES = {
+  dark: { name: 'mapbox-official/ckpqkpnpo21bi18pswix7crxa', version: 1 },
+  simple: { name: 'mapbox/light-v10', version: 1 },
+  standard: { name: 'mapbox/streets-v11', version: 1 },
+  satellite: { name: 'mapbox-official/ckpqknefy216x17t9b07w8xmf', version: 1 },
+};
+
+const tileURL = style => {
+  const { version, name } = style;
+
+  return version === 1
+    ? URLV1(name)
+    : version === 4
+    ? URLV4(name)
+    : URLV1('standard');
+};
+
+const layers = style =>
+  typeof L !== 'undefined'
+    ? L.tileLayer(tileURL(style), {
+        attribution:
+          '&copy; <a href="https://www.mapbox.com/map-feedback/" target="_blank">Mapbox</a> &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+        edgeBufferTiles: 2,
+        maxZoom: 19,
+        minZoom: 2,
+        tileSize: 512,
+        zoomOffset: -1,
+      })
+    : '';
+
+
+
+
+
+
+
+
+
+
+
+
+var baseMaps = {
+	"OSM": osm,
+	//'Simple map': layers(STYLES.simple),
+    	//'Standard map': layers(STYLES.standard),
+    	'Dark map': layers(STYLES.dark),
+	'Satellite map': layers(STYLES.satellite),
+	//"Dark_Contrast": Stamen_Toner ,
+	"Dark": CartoDB_DarkMatter,
+	"Light":CartoDB_Positron,
+	//"Satellite":GeoportailFrance_orthos
+	"Nautical":NauticalChart
+};
+
+
+var overlayMaps = {
+	"COE CSW": COE_Marker,
+	"Contacts": contact_layer
+
+};
+
+var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+
+var ruler_options = {
+      position: 'topright',         // Leaflet control position option
+      circleMarker: {               // Leaflet circle marker options for points used in this plugin
+        color: 'red',
+        radius: 2
+      },
+      lineStyle: {                  // Leaflet polyline options for lines used in this plugin
+        color: 'red',
+        dashArray: '1,6'
+      },
+      lengthUnit: {                 // You can use custom length units. Default unit is kilometers.
+        display: 'Nm',              // This is the display value will be shown on the screen. Example: 'meters'
+        decimal: 2,                 // Distance result will be fixed to this value. 
+        factor: 0.539956803,               // This value will be used to convert from kilometers. Example: 1000 (from kilometers to meters)  
+        label: 'Distance:'           
+      },
+      angleUnit: {
+        display: '&deg;',           // This is the display value will be shown on the screen. Example: 'Gradian'
+        decimal: 2,                 // Bearing result will be fixed to this value.
+        factor: null,                // This option is required to customize angle unit. Specify solid angle value for angle unit. Example: 400 (for gradian).
+        label: 'Bearing:'
+      }
+    };
+
+
+L.control.ruler(ruler_options).addTo(map);
+
+L.control.coordinates({
+	position:"bottomleft", //optional default "bootomright"
+	decimals:2, //optional default 4
+	labelTemplateLat:"Latitude: {y}", //optional default "Lat: {y}"
+	labelTemplateLng:"Longitude: {x}", //optional default "Lng: {x}"
+	enableUserInput:true, //optional default true
+	useDMS:true, //optional default false
+	useLatLngOrder: true //ordering of labels, default false-> lng-lat
+}).addTo(map);
+
+
+
+
+
+
+//end of layer control
+
+
+
+
+
+</script></body></html>
